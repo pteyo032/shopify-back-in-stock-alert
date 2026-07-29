@@ -1,0 +1,9 @@
+{
+  "blocks": {
+    "back_in_stock_alert": {
+      "email_label": "E-mail",
+      "email_placeholder": "Adresse e-mail",
+      "generic_error": "Impossible d'envoyer votre demande. Veuillez réessayer."
+    }
+  }
+}

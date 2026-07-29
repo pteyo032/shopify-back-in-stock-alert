@@ -1,0 +1,9 @@
+{
+  "blocks": {
+    "back_in_stock_alert": {
+      "email_label": "Email",
+      "email_placeholder": "Email address",
+      "generic_error": "We couldn't submit your request. Please try again."
+    }
+  }
+}

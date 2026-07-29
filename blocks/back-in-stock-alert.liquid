@@ -1,0 +1,422 @@
+{%- doc -%}
+  Automatically opens a "notify me" panel when the customer selects a product variant
+  that is out of stock. The panel is fully custom (Liquid/JS); storing signups and
+  sending the actual notification email is delegated to the Notify Me! app's API
+  (see assets/back-in-stock-alert.js — #submitToNotifyMe is a stub until the app
+  is installed and its API docs are available).
+
+  Intended for use inside sections/product-information.liquid (or any section
+  accepting @theme blocks) on the product page.
+{%- enddoc -%}
+
+{% liquid
+  assign block_settings = block.settings
+  assign product = closest.product
+  if request.visual_preview_mode and product == blank
+    assign product = collections.all.products.first
+  endif
+
+  assign variant = product.selected_or_first_available_variant
+  assign variant_image = variant.featured_image | default: product.featured_image
+%}
+
+{% if product != blank %}
+  <back-in-stock-alert-component
+    id="BackInStockAlert-{{ block.id }}"
+    class="back-in-stock-alert"
+    data-product-id="{{ product.id }}"
+    data-available="{{ variant.available }}"
+    data-variant-id="{{ variant.id }}"
+    data-skip-node-update
+    {{ block.shopify_attributes }}
+  >
+    <dialog
+      ref="dialog"
+      scroll-lock
+      aria-labelledby="BackInStockAlert-Heading-{{ block.id }}"
+      class="back-in-stock-alert__dialog color-custom-popover"
+    >
+      <button
+        type="button"
+        ref="closeButton"
+        on:click="/closeDialog"
+        class="button button-unstyled close-button back-in-stock-alert__close"
+        aria-label="{{ 'accessibility.close_dialog' | t }}"
+      >
+        <span class="svg-wrapper">{{- 'icon-close.svg' | inline_asset_content -}}</span>
+      </button>
+
+      <div class="back-in-stock-alert__content">
+        <h2
+          id="BackInStockAlert-Heading-{{ block.id }}"
+          class="back-in-stock-alert__title h4"
+        >
+          {{ block_settings.popup_title | default: 'Alerte de stock' }}
+        </h2>
+
+        <div
+          class="back-in-stock-alert__confirmation-message hidden"
+          ref="confirmationMessage"
+        >
+          <span class="svg-wrapper icon-success">{{- 'icon-checkmark.svg' | inline_asset_content -}}</span>
+          <p>{{ block_settings.confirmation_message | default: "C'est noté ! Nous vous préviendrons par email dès que cet article sera de nouveau en stock." }}</p>
+        </div>
+
+        <div
+          class="back-in-stock-alert__product"
+          ref="productSingle"
+        >
+          <img
+            ref="productImage"
+            class="back-in-stock-alert__image"
+            src="{{ variant_image | image_url: width: 160 }}"
+            alt="{{ variant_image.alt | escape }}"
+            width="80"
+            height="80"
+            {% if variant_image == blank %}
+              hidden
+            {% endif %}
+          >
+          <div class="back-in-stock-alert__product-info">
+            <p
+              ref="productTitle"
+              class="back-in-stock-alert__product-title"
+            >
+              {{ product.title }}
+            </p>
+            {%- unless product.has_only_default_variant -%}
+              <p
+                ref="variantTitle"
+                class="back-in-stock-alert__variant-title"
+              >
+                {{ variant.title }}
+              </p>
+            {%- endunless -%}
+          </div>
+        </div>
+
+        <div
+          class="back-in-stock-alert__product-list hidden"
+          ref="productList"
+        ></div>
+
+        <template ref="itemTemplate">
+          <div class="back-in-stock-alert__product">
+            <img
+              class="back-in-stock-alert__image"
+              src=""
+              alt=""
+              width="80"
+              height="80"
+              hidden
+            >
+            <div class="back-in-stock-alert__product-info">
+              <p class="back-in-stock-alert__product-title"></p>
+              <p class="back-in-stock-alert__variant-title"></p>
+            </div>
+          </div>
+        </template>
+
+        <div
+          class="back-in-stock-alert__message back-in-stock-alert__message--error hidden"
+          ref="errorMessage"
+          role="alert"
+        >
+          {{- 'blocks.back_in_stock_alert.generic_error' | t -}}
+        </div>
+
+        <form
+          ref="form"
+          on:submit="/handleSubmit"
+          class="back-in-stock-alert__form"
+        >
+          <label
+            for="BackInStockAlert-Email-{{ block.id }}"
+            class="visually-hidden"
+          >
+            {{- 'blocks.back_in_stock_alert.email_label' | t -}}
+          </label>
+          <input
+            id="BackInStockAlert-Email-{{ block.id }}"
+            ref="emailInput"
+            class="back-in-stock-alert__input"
+            type="email"
+            name="email"
+            autocorrect="off"
+            autocapitalize="off"
+            autocomplete="email"
+            placeholder="{{ 'blocks.back_in_stock_alert.email_placeholder' | t }}"
+            required
+          >
+
+          <label class="back-in-stock-alert__consent">
+            <input
+              ref="consentCheckbox"
+              type="checkbox"
+              name="consent"
+              required
+            >
+            <span>{{ block_settings.consent_label | default: "J'accepte de recevoir une notification par email concernant la disponibilité de ce produit." }}</span>
+          </label>
+
+          <button
+            type="submit"
+            ref="submitButton"
+            class="button back-in-stock-alert__submit"
+          >
+            <span ref="submitButtonText">
+              {{- block_settings.submit_button_text | default: 'Me prévenir' -}}
+            </span>
+          </button>
+
+          <div
+            class="visually-hidden"
+            aria-live="assertive"
+            role="status"
+            aria-atomic="true"
+            ref="liveRegion"
+          ></div>
+        </form>
+
+        <button
+          type="button"
+          ref="continueShoppingButton"
+          on:click="/closeDialog"
+          class="button back-in-stock-alert__continue hidden"
+        >
+          {{- block_settings.continue_shopping_text | default: 'Continuer mes achats' -}}
+        </button>
+      </div>
+    </dialog>
+  </back-in-stock-alert-component>
+
+  <script
+    src="{{ 'back-in-stock-alert.js' | asset_url }}"
+    type="module"
+  ></script>
+{% endif %}
+
+{% stylesheet %}
+  .back-in-stock-alert__dialog {
+    /* Mobile-first: bottom sheet sized to its content, not the full viewport. */
+    position: fixed;
+    inset: auto 0 0 0;
+    width: 100%;
+    max-width: 100%;
+    height: fit-content;
+    max-height: 85vh;
+    margin: 0;
+    padding: var(--padding-xl);
+    border: none;
+    border-top-left-radius: var(--style-border-radius-popover);
+    border-top-right-radius: var(--style-border-radius-popover);
+    box-shadow: var(--shadow-popover);
+    overflow-y: auto;
+
+    @media screen and (min-width: 750px) {
+      /* Desktop: full-height panel anchored to the right instead. */
+      inset: 0 0 0 auto;
+      width: min(420px, 100vw);
+      height: 100dvh;
+      max-height: none;
+      border-radius: 0;
+    }
+  }
+
+  .back-in-stock-alert__dialog::backdrop {
+    transition: backdrop-filter var(--animation-speed) var(--animation-easing);
+    backdrop-filter: brightness(1);
+    background: rgb(var(--backdrop-color-rgb) / var(--backdrop-opacity));
+  }
+
+  .back-in-stock-alert__dialog[open] {
+    animation: move-and-fade var(--animation-speed) var(--animation-easing) forwards;
+    --start-y: 100%;
+    --end-y: 0;
+    --start-opacity: 1;
+    --end-opacity: 1;
+
+    @media screen and (min-width: 750px) {
+      --start-x: 100%;
+      --end-x: 0;
+      --start-y: 0;
+    }
+
+    &::backdrop {
+      animation: backdropFilter var(--animation-speed) var(--animation-easing) forwards;
+    }
+  }
+
+  .back-in-stock-alert__dialog.dialog-closing {
+    animation: move-and-fade var(--animation-speed) var(--animation-easing);
+    --start-y: 0;
+    --end-y: 100%;
+    --start-opacity: 1;
+    --end-opacity: 1;
+
+    @media screen and (min-width: 750px) {
+      --start-x: 0;
+      --end-x: 100%;
+      --end-y: 0;
+    }
+
+    &::backdrop {
+      opacity: 0;
+    }
+  }
+
+  .back-in-stock-alert__close {
+    position: absolute;
+    top: var(--padding-lg);
+    right: var(--padding-lg);
+  }
+
+  .back-in-stock-alert__content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-lg);
+    padding-block-start: var(--padding-2xl);
+  }
+
+  .back-in-stock-alert__confirmation-message {
+    order: 1;
+    display: flex;
+    align-items: center;
+    gap: var(--gap-xs);
+  }
+
+  .back-in-stock-alert__confirmation-message .icon-success {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: var(--color-success);
+    color: var(--color-background);
+  }
+
+  .back-in-stock-alert__confirmation-message .icon-success svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .back-in-stock-alert__product {
+    order: 2;
+    display: flex;
+    align-items: center;
+    gap: var(--gap-md);
+  }
+
+  .back-in-stock-alert__product-list {
+    order: 2;
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-md);
+  }
+
+  .back-in-stock-alert__product-list .back-in-stock-alert__product {
+    order: initial;
+  }
+
+  .back-in-stock-alert__image {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: var(--style-border-radius-inputs);
+  }
+
+  .back-in-stock-alert__product-title {
+    font-weight: var(--font-weight-medium);
+    margin: 0;
+  }
+
+  .back-in-stock-alert__variant-title {
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-70));
+    margin: 0;
+  }
+
+  .back-in-stock-alert__form {
+    order: 4;
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-md);
+  }
+
+  .back-in-stock-alert__input {
+    border-width: var(--style-border-width-inputs);
+    border-radius: var(--style-border-radius-inputs);
+    border-style: solid;
+    border-color: var(--color-input-border);
+    background-color: var(--color-input-background);
+    color: var(--color-input-text);
+    padding: var(--padding-lg);
+  }
+
+  .back-in-stock-alert__consent {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--gap-xs);
+    font-size: var(--font-size--sm);
+  }
+
+  .back-in-stock-alert__message--error {
+    order: 3;
+    color: var(--color-error, #d02e2e);
+  }
+
+  .back-in-stock-alert__continue {
+    order: 5;
+  }
+
+  .back-in-stock-alert__confirmation-message {
+    display: flex;
+    align-items: center;
+    gap: var(--gap-xs);
+  }
+
+  .back-in-stock-alert__submit[aria-busy='true'] {
+    opacity: var(--opacity-70);
+    pointer-events: none;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.back_in_stock_alert",
+  "tag": null,
+  "settings": [
+    {
+      "type": "text",
+      "id": "popup_title",
+      "label": "t:settings.back_in_stock_popup_title",
+      "default": "Alerte de stock"
+    },
+    {
+      "type": "text",
+      "id": "submit_button_text",
+      "label": "t:settings.back_in_stock_submit_button_text",
+      "default": "Me prévenir"
+    },
+    {
+      "type": "text",
+      "id": "consent_label",
+      "label": "t:settings.back_in_stock_consent_label",
+      "default": "J'accepte de recevoir une notification par email concernant la disponibilité de ce produit."
+    },
+    {
+      "type": "text",
+      "id": "confirmation_message",
+      "label": "t:settings.back_in_stock_confirmation_message",
+      "default": "C'est noté ! Nous vous préviendrons par email dès que cet article sera de nouveau en stock."
+    },
+    {
+      "type": "text",
+      "id": "continue_shopping_text",
+      "label": "t:settings.back_in_stock_continue_shopping_text",
+      "default": "Continuer mes achats"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,12 @@
+{
+  "names": {
+    "back_in_stock_alert": "Alerte de retour en stock"
+  },
+  "settings": {
+    "back_in_stock_popup_title": "Titre de la popup",
+    "back_in_stock_submit_button_text": "Texte du bouton d'envoi",
+    "back_in_stock_consent_label": "Texte de la case de consentement",
+    "back_in_stock_confirmation_message": "Message de confirmation",
+    "back_in_stock_continue_shopping_text": "Texte du bouton \"Continuer mes achats\""
+  }
+}

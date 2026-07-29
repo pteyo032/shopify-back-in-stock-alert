@@ -1,0 +1,12 @@
+{
+  "names": {
+    "back_in_stock_alert": "Back in Stock Alert"
+  },
+  "settings": {
+    "back_in_stock_popup_title": "Popup title",
+    "back_in_stock_submit_button_text": "Submit button text",
+    "back_in_stock_consent_label": "Consent checkbox text",
+    "back_in_stock_confirmation_message": "Confirmation message",
+    "back_in_stock_continue_shopping_text": "Continue shopping button text"
+  }
+}
