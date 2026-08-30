@@ -102,6 +102,11 @@
 
         <template ref="itemTemplate">
           <div class="back-in-stock-alert__product">
+            {%- # theme-check-disable RemoteAsset -%}
+            {%- comment -%}
+              src is empty on purpose — filled by JS at runtime (product image
+              once it's back in stock), not a hardcoded remote URL.
+            {%- endcomment -%}
             <img
               class="back-in-stock-alert__image"
               src=""
@@ -110,6 +115,7 @@
               height="80"
               hidden
             >
+            {%- # theme-check-enable RemoteAsset -%}
             <div class="back-in-stock-alert__product-info">
               <p class="back-in-stock-alert__product-title"></p>
               <p class="back-in-stock-alert__variant-title"></p>
