@@ -2,6 +2,8 @@
 
 # Shopify Back in Stock Alert — popup automatique "prévenez-moi"
 
+[![Theme Check](https://github.com/pteyo032/shopify-back-in-stock-alert/actions/workflows/theme-check.yml/badge.svg)](https://github.com/pteyo032/shopify-back-in-stock-alert/actions/workflows/theme-check.yml)
+
 Un panneau "prévenez-moi" intégré au thème, pour les pages produit Shopify :
 dès que le client sélectionne une variante en rupture de stock, un panneau
 100% custom s'ouvre tout seul — pas besoin de cliquer sur un bouton — pour

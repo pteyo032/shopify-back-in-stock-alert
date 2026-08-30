@@ -2,6 +2,8 @@
 
 # Shopify Back in Stock Alert — automatic notify-me popup
 
+[![Theme Check](https://github.com/pteyo032/shopify-back-in-stock-alert/actions/workflows/theme-check.yml/badge.svg)](https://github.com/pteyo032/shopify-back-in-stock-alert/actions/workflows/theme-check.yml)
+
 A theme-native "notify me" panel for Shopify product pages: the moment a
 customer selects a variant that's out of stock, a fully custom panel opens on
 its own — no button to click — letting them leave an email to be notified
