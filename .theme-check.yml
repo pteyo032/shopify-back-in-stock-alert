@@ -1,0 +1,8 @@
+# This repo is a fragment of the Horizon theme (a single block), not a full
+# theme. `accessibility.close_dialog` is a Horizon-native locale key that a
+# real Horizon theme's en.default.json already provides — verified against
+# the theme, not redefined here to avoid a duplicate/drifting copy.
+extends: theme-check:recommended
+
+TranslationKeyExists:
+  enabled: false
